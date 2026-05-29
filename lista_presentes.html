@@ -1,0 +1,3199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lista de Presentes — Renan & Karol | Chá de Panela</title>
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Lista de Presentes — Renan & Karol">
+    <meta property="og:description" content="Chá de Panela - 14 de Junho de 2026. Escolha seu presente e participe do desafio!">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://npuf5ea3gxuyw.kimi.page/hero-casal.jpg">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --vinho: #722F37;
+            --vinho-claro: #9B4D55;
+            --vinho-suave: rgba(114, 47, 55, 0.06);
+            --creme: #FDF8F3;
+            --creme-escuro: #F5EDE4;
+            --texto: #3D3D3D;
+            --texto-claro: #777;
+            --dourado: #B8956A;
+            --preto: #1a1a1a;
+            --branco: #f8f8f8;
+            --sucesso: #2e7d32;
+            --aviso: #e65100;
+            --erro: #c62828;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--creme);
+            color: var(--texto);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: #fff;
+            position: relative;
+            box-shadow: 0 0 60px rgba(0,0,0,0.06);
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--vinho) 0%, #4a1e24 50%, var(--vinho) 100%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.08)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.06)"/><circle cx="70" cy="70" r="0.8" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: 200px 200px;
+            opacity: 0.5;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 0 30px 80px;
+            color: #fff;
+        }
+
+        .hero-label {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 18px;
+            opacity: 0.9;
+        }
+
+        .hero-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: 4.5rem;
+            line-height: 0.9;
+            margin-bottom: 10px;
+            text-shadow: 0 3px 20px rgba(0,0,0,0.3);
+        }
+
+        .hero-subtitle {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            font-weight: 400;
+            margin-bottom: 35px;
+            opacity: 0.95;
+        }
+
+        .hero-names {
+            font-family: 'Great Vibes', cursive;
+            font-size: 3rem;
+            margin-bottom: 25px;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.3);
+            letter-spacing: 3px;
+        }
+
+        .hero-line {
+            width: 60px;
+            height: 1px;
+            background: var(--dourado);
+            margin: 0 auto 20px;
+        }
+
+        .hero-date {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            letter-spacing: 3px;
+            font-weight: 300;
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .scroll-hint svg {
+            width: 24px;
+            height: 24px;
+            stroke: #fff;
+            stroke-width: 1.5;
+            fill: none;
+            opacity: 0.7;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        /* ===== SEÇÕES COMUNS ===== */
+        section { padding: 50px 25px; position: relative; }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.3rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            text-align: center;
+            color: var(--texto);
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        .section-subtitle {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 1.05rem;
+            text-align: center;
+            color: var(--vinho);
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        /* ===== MENSAGEM DE BOAS-VINDAS ===== */
+        .welcome-section {
+            background: var(--creme);
+            text-align: center;
+            padding: 45px 30px;
+        }
+
+        .welcome-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: var(--texto);
+            font-weight: 300;
+            max-width: 320px;
+            margin: 0 auto 20px;
+        }
+
+        .welcome-heart {
+            opacity: 0.5;
+            animation: pulse-heart 2.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-heart {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        /* ===== INSTRUÇÕES ===== */
+        .instructions-section {
+            background: var(--vinho-suave);
+            padding: 45px 25px;
+        }
+
+        .instructions-list {
+            list-style: none;
+            max-width: 320px;
+            margin: 0 auto;
+        }
+
+        .instructions-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--texto);
+        }
+
+        .instructions-list .num {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--vinho);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* ===== NOSSO ESTILO ===== */
+        .style-section {
+            text-align: center;
+            padding: 45px 25px;
+        }
+
+        .style-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: var(--texto);
+            font-weight: 300;
+            max-width: 320px;
+            margin: 0 auto 30px;
+        }
+
+        .colors-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .color-item { text-align: center; }
+
+        .color-circle {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            position: relative;
+        }
+
+        .color-circle::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 1.5px dashed var(--vinho-claro);
+            opacity: 0.4;
+        }
+
+        .color-preto { background: var(--preto); }
+        .color-branco { background: var(--branco); border-color: #ddd; }
+        .color-inox { background: linear-gradient(135deg, #b8b8b8 0%, #e0e0e0 40%, #a0a0a0 100%); }
+        .color-amadeirado { background: linear-gradient(135deg, #8B6914 0%, #A0522D 50%, #6B4423 100%); }
+        .color-vinho { background: var(--vinho); }
+        .color-creme { background: var(--creme); border-color: #ddd; }
+
+        .color-name {
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--texto-claro);
+            font-weight: 500;
+        }
+
+        /* ===== DESAFIO DOS PRESENTES ===== */
+        .challenge-section {
+            background: linear-gradient(180deg, var(--creme-escuro) 0%, #fff 100%);
+            padding: 50px 25px;
+            text-align: center;
+        }
+
+        .challenge-badge {
+            display: inline-block;
+            background: var(--vinho);
+            color: #fff;
+            font-size: 0.65rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-bottom: 22px;
+            font-weight: 500;
+        }
+
+        .challenge-box {
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px 25px;
+            max-width: 320px;
+            margin: 0 auto 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+            border: 1px solid rgba(114, 47, 55, 0.1);
+        }
+
+        .points-grid {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .point-item {
+            text-align: center;
+        }
+
+        .point-stars {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+        .point-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--vinho);
+            line-height: 1;
+        }
+
+        .point-label {
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--texto-claro);
+            margin-top: 4px;
+        }
+
+        .challenge-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--texto);
+            font-style: italic;
+        }
+
+        /* ===== CATEGORIAS DE PRODUTOS ===== */
+        .category-section {
+            padding: 40px 20px;
+        }
+
+        .category-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .category-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .category-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--vinho);
+            font-weight: 600;
+        }
+
+        /* ===== FILTROS DE CATEGORIA ===== */
+        .category-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 25px;
+            padding: 0 15px;
+        }
+
+        .category-filter-btn {
+            padding: 10px 18px;
+            border: 1.5px solid var(--vinho);
+            border-radius: 25px;
+            background: transparent;
+            color: var(--vinho);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-filter-btn:hover,
+        .category-filter-btn.active {
+            background: var(--vinho);
+            color: #fff;
+        }
+
+        /* ===== CARDS DE PRODUTOS - ESTILO CATALOGO ===== */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .product-card {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            border: 1px solid rgba(114, 47, 55, 0.06);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(114, 47, 55, 0.1);
+        }
+
+        .product-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background-color: #f8f4f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .product-image-placeholder {
+            font-size: 2.5rem;
+            opacity: 0.25;
+        }
+
+        .product-stars {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255,255,255,0.92);
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+            z-index: 2;
+        }
+
+        .product-info {
+            padding: 12px 10px 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--texto);
+            line-height: 1.25;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-description {
+            display: none;
+        }
+
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .product-points {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--vinho);
+        }
+
+        .product-status {
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .status-available {
+            background: #e8f5e9;
+            color: var(--sucesso);
+        }
+
+        .status-reserved {
+            background: #fff3e0;
+            color: var(--aviso);
+        }
+
+        .status-soldout {
+            background: #ffebee;
+            color: var(--erro);
+        }
+
+        .product-reservations {
+            font-size: 0.75rem;
+            color: var(--texto-claro);
+            margin-bottom: 15px;
+        }
+
+        .btn-reserve {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: var(--vinho);
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-reserve:hover:not(:disabled) {
+            background: var(--vinho-claro);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(114, 47, 55, 0.25);
+        }
+
+        .btn-reserve:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* ===== MODAL DE IMAGEM AMPLIADA ===== */
+        .image-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .image-modal-overlay.active {
+            display: flex;
+        }
+
+        .image-modal {
+            background: #fff;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 420px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlide 0.3s ease;
+        }
+
+        .image-modal-img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 20px 20px 0 0;
+            background: #f5ede6;
+        }
+
+        .image-modal-info {
+            padding: 22px 24px 24px;
+        }
+
+        .image-modal-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: var(--texto);
+            line-height: 1.35;
+            margin-bottom: 8px;
+        }
+
+        .image-modal-stars {
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+
+        .image-modal-points {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--vinho);
+            margin-bottom: 18px;
+            letter-spacing: 1px;
+        }
+
+        .image-modal-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: var(--vinho);
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .image-modal-btn:hover {
+            background: var(--vinho-claro);
+        }
+
+        .image-modal .modal-close {
+            top: 12px;
+            right: 12px;
+            background: rgba(255,255,255,0.9);
+            z-index: 10;
+        }
+
+        /* ===== MODAL DE RESERVA ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--vinho-suave);
+            color: var(--vinho);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--vinho);
+            color: #fff;
+        }
+
+        .modal-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            color: var(--vinho);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .modal-product {
+            font-size: 0.9rem;
+            color: var(--texto-claro);
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--texto);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 12px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+            background: #fafafa;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--vinho);
+            background: #fff;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .cart-preview {
+            background: var(--vinho-suave);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .cart-preview-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--vinho);
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(114,47,55,0.1);
+            font-size: 0.85rem;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid var(--vinho);
+            font-weight: 700;
+            color: var(--vinho);
+        }
+
+        .btn-confirm {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: var(--vinho);
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-confirm:hover {
+            background: var(--vinho-claro);
+            box-shadow: 0 6px 20px rgba(114, 47, 55, 0.25);
+        }
+
+        /* ===== CARRINHO FLUTUANTE ===== */
+        .cart-float {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 100;
+        }
+
+        .cart-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--vinho);
+            color: #fff;
+            border: none;
+            box-shadow: 0 6px 25px rgba(114, 47, 55, 0.35);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        .cart-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--dourado);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== PIX SECTION ===== */
+        .pix-section {
+            background: var(--vinho);
+            color: #fff;
+            text-align: center;
+            padding: 50px 30px;
+        }
+
+        .pix-section .section-title {
+            color: #fff;
+        }
+
+        .pix-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            opacity: 0.95;
+            max-width: 320px;
+            margin: 0 auto 25px;
+        }
+
+        .pix-box {
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1.5px dashed rgba(255,255,255,0.3);
+        }
+
+        .pix-key {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .pix-name {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .pix-bank {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .btn-copy {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            color: var(--vinho);
+            border: none;
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-copy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        /* ===== LOJAS ===== */
+        .stores-section {
+            background: var(--creme-escuro);
+            padding: 45px 25px;
+            text-align: center;
+        }
+
+        .stores-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: var(--texto);
+            max-width: 320px;
+            margin: 0 auto 30px;
+        }
+
+        .stores-grid {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .store-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 25px;
+            width: 140px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+
+        .store-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .store-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--texto);
+            margin-bottom: 5px;
+        }
+
+        .store-hint {
+            font-size: 0.7rem;
+            color: var(--texto-claro);
+            line-height: 1.4;
+        }
+
+        /* ===== FECHAMENTO ===== */
+        .closing-section {
+            background: linear-gradient(135deg, var(--vinho) 0%, #4a1e24 100%);
+            color: #fff;
+            text-align: center;
+            padding: 60px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .closing-section::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="30" cy="30" r="0.8" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="60" r="1" fill="rgba(255,255,255,0.08)"/></svg>');
+            background-size: 150px 150px;
+        }
+
+        .closing-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .closing-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            font-style: italic;
+            max-width: 320px;
+            margin: 0 auto 30px;
+            opacity: 0.95;
+        }
+
+        .closing-names {
+            font-family: 'Great Vibes', cursive;
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .closing-heart {
+            font-size: 1.5rem;
+            opacity: 0.7;
+            animation: pulse-heart 2s ease-in-out infinite;
+        }
+
+        /* ===== ANIMAÇÕES ===== */
+        .fade-up {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--texto);
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.4s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .hero-title { font-size: 3.5rem; }
+            .hero-names { font-size: 2.4rem; }
+            .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        }
+
+        @media (min-width: 481px) {
+            .products-grid { grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        }
+
+        @media (min-width: 768px) {
+            .products-grid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+        }
+
+        /* ===== CONTADOR DE PROGRESSO ===== */
+        .progress-counter {
+            max-width: 440px;
+            margin: 0 auto 25px;
+            padding: 0 20px;
+        }
+
+        .progress-header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .progress-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .progress-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--texto);
+            line-height: 1;
+        }
+
+        .progress-label {
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--texto-claro);
+            margin-top: 4px;
+        }
+
+        .progress-divider {
+            color: var(--creme-escuro);
+            font-size: 1.5rem;
+            font-weight: 300;
+        }
+
+        .progress-bar-bg {
+            height: 8px;
+            background: var(--creme-escuro);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--vinho) 0%, var(--vinho-claro) 100%);
+            border-radius: 10px;
+            transition: width 0.6s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--texto-claro);
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== VOLTAR AO CONVITE ===== -->
+<a href="index.html" style="position: fixed; top: 15px; left: 15px; z-index: 100; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); color: var(--vinho); text-decoration: none; padding: 10px 16px; border-radius: 25px; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 500; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 6px; transition: all 0.3s ease;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+    Voltar ao Convite
+</a>
+
+<div class="container">
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-label">Chá de Panela</div>
+            <div class="hero-title">Lista de Presentes</div>
+            <div class="hero-subtitle">Renan & Karol</div>
+            <div class="hero-line"></div>
+            <div class="hero-date">14 de Junho de 2026</div>
+        </div>
+        <div class="scroll-hint">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        </div>
+    </section>
+
+    <!-- ===== BOAS-VINDAS ===== -->
+    <section class="welcome-section fade-up">
+        <p class="welcome-text">
+            Estamos construindo nosso lar com muito amor e carinho. Criamos esta lista para facilitar a escolha dos presentes e ajudar na organização das reservas.
+        </p>
+        <svg class="welcome-heart" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--vinho)" stroke-width="1.2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        <p class="welcome-text" style="margin-top: 20px; font-size: 1rem;">
+            Fique à vontade para escolher todos os itens que desejar nos presentear. O mais importante para nós é celebrar esse momento ao lado de pessoas especiais como você.
+        </p>
+    </section>
+
+    <!-- ===== INSTRUÇÕES ===== -->
+    <section class="instructions-section fade-up">
+        <h2 class="section-title">Como Funciona</h2>
+        <ul class="instructions-list">
+            <li>
+                <span class="num">1</span>
+                <span>Navegue pelos itens disponíveis organizados por categoria.</span>
+            </li>
+            <li>
+                <span class="num">2</span>
+                <span>Ao encontrar um presente que deseja oferecer, clique em <strong>"Reservar"</strong> que ele será adicionado ao carrinho.</span>
+            </li>
+            <li>
+                <span class="num">3</span>
+                <span>Depois é só entrar no carrinho e preencher seus dados para concluir sua reserva.</span>
+            </li>
+            <li>
+                <span class="num">4</span>
+                <span>Após a confirmação, o item ficará marcado como reservado e você poderá levar ou enviar no dia do chá de panela. ❤️</span>
+            </li>
+        </ul>
+        <p style="text-align: center; margin-top: 25px; font-size: 1.05rem; color: var(--texto); font-style: italic; font-family: 'Cormorant Garamond', serif;">
+            Divirta-se no nosso catálogo de presentes ✨
+        </p>
+    </section>
+
+    <!-- ===== NOSSO ESTILO ===== -->
+    <section class="style-section fade-up">
+        <h2 class="section-title">Nosso Estilo</h2>
+        <p class="style-text">
+            Preferimos itens em tons neutros, branco, bege, madeira clara, inox ou dourado. Nosso estilo é moderno, elegante e minimalista, mas sabemos que você tem bom gosto!
+        </p>
+        <div class="colors-row">
+            <div class="color-item">
+                <div class="color-circle color-preto"></div>
+                <div class="color-name">Preto</div>
+            </div>
+            <div class="color-item">
+                <div class="color-circle color-branco"></div>
+                <div class="color-name">Branco</div>
+            </div>
+            <div class="color-item">
+                <div class="color-circle color-inox"></div>
+                <div class="color-name">Inox</div>
+            </div>
+            <div class="color-item">
+                <div class="color-circle color-amadeirado"></div>
+                <div class="color-name">Madeira</div>
+            </div>
+            <div class="color-item">
+                <div class="color-circle color-creme"></div>
+                <div class="color-name">Creme</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== DESAFIO ===== -->
+    <section class="challenge-section fade-up">
+        <div class="challenge-badge">🏆 Desafio dos Presentes</div>
+        <h2 class="section-title" style="color: var(--vinho);">Acumule Pontos</h2>
+        <p class="section-subtitle">Cada presente reservado e entregue acumulará pontos para você!</p>
+
+        <div class="challenge-box">
+            <div class="points-grid">
+                <div class="point-item">
+                    <div class="point-stars">⭐</div>
+                    <div class="point-value">1</div>
+                    <div class="point-label">Ponto</div>
+                </div>
+                <div class="point-item">
+                    <div class="point-stars">⭐⭐</div>
+                    <div class="point-value">3</div>
+                    <div class="point-label">Pontos</div>
+                </div>
+                <div class="point-item">
+                    <div class="point-stars">⭐⭐⭐</div>
+                    <div class="point-value">5</div>
+                    <div class="point-label">Pontos</div>
+                </div>
+            </div>
+            <p class="challenge-text">
+                Os itens com mais estrelas são os mais difíceis de conseguir e são os que mais desejamos para nosso novo lar, por isso valem muitos pontos, lembre-se que quanto mais presentes você levar mais chances você terá de ganhar.
+                Ao final do evento, quem tiver a maior pontuação receberá um prêmio muito especial preparado com muito carinho!
+            </p>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--texto-claro); font-style: italic; max-width: 300px; margin: 0 auto;">
+            Mas lembre-se: esta é apenas uma brincadeira para tornar nosso chá ainda mais divertido. O verdadeiro presente é compartilhar esse momento tão especial!
+        </p>
+    </section>
+
+    <!-- ===== CATALOGO DE PRODUTOS ===== -->
+    <div style="padding: 40px 15px 10px; text-align: center;">
+        <h2 class="section-title" style="margin-bottom: 8px;">Catálogo de Presentes</h2>
+        <p style="font-size: 0.85rem; color: var(--texto-claro); font-family: 'Cormorant Garamond', serif; font-style: italic;">Filtre por categoria ou navegue por todos os itens</p>
+    </div>
+
+    <!-- ===== CONTADOR DE PROGRESSO ===== -->
+    <div class="progress-counter" id="progress-counter">
+        <div class="progress-header">
+            <div class="progress-stats">
+                <div class="progress-stat">
+                    <span class="progress-number" id="progress-total">110</span>
+                    <span class="progress-label">presentes</span>
+                </div>
+                <div class="progress-divider">|</div>
+                <div class="progress-stat">
+                    <span class="progress-number" id="progress-reserved" style="color: var(--vinho);">0</span>
+                    <span class="progress-label">reservados</span>
+                </div>
+                <div class="progress-divider">|</div>
+                <div class="progress-stat">
+                    <span class="progress-number" id="progress-available" style="color: var(--sucesso);">110</span>
+                    <span class="progress-label">disponíveis</span>
+                </div>
+            </div>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%;"></div>
+        </div>
+        <p class="progress-text" id="progress-text">Nenhum presente reservado ainda. Seja o primeiro! 🎁</p>
+    </div>
+
+    <div class="category-filters" id="category-filters">
+        <button class="category-filter-btn active" data-filter="all">Todos</button>
+        <button class="category-filter-btn" data-filter="cozinha">🍳 Cozinha</button>
+        <button class="category-filter-btn" data-filter="mesa">🍽️ Mesa</button>
+        <button class="category-filter-btn" data-filter="casa">🏡 Casa</button>
+        <button class="category-filter-btn" data-filter="organizacao">🧹 Organização</button>
+    </div>
+
+    <div id="products-container"></div>
+
+    <!-- ===== PIX ===== -->
+    <section class="pix-section fade-up">
+        <h2 class="section-title">Não Encontrou o Ideal?</h2>
+        <p class="pix-text">
+            Fique à vontade para presentear com PIX! Sua contribuição será muito bem-vinda para ajudar a montar nosso lar.
+        </p>
+        <div class="pix-box">
+            <div class="pix-key">(94) 98410-9544</div>
+            <div class="pix-name">Renan de Oliveira</div>
+            <div class="pix-bank">NUBANK</div>
+        </div>
+        <button class="btn-copy" onclick="copyPix()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copiar Chave PIX
+        </button>
+    </section>
+
+    <!-- ===== LOJAS ===== -->
+    <section class="stores-section fade-up">
+        <h2 class="section-title">Onde Comprar</h2>
+        <p class="stores-text">
+            Sugerimos estas lojas que possuem opções online com retirada em loja física em Tucuruí, Repartimento ou Pacajá.
+        </p>
+        <div class="stores-grid">
+            <a href="https://www.magazineluiza.com.br" target="_blank" class="store-card" style="text-decoration: none;">
+                <div class="store-icon">🛒</div>
+                <div class="store-name">Magalu</div>
+                <div class="store-hint">magazineluiza.com.br</div>
+            </a>
+            <a href="https://www.casasbahia.com.br" target="_blank" class="store-card" style="text-decoration: none;">
+                <div class="store-icon">🏠</div>
+                <div class="store-name">Casas Bahia</div>
+                <div class="store-hint">casasbahia.com.br</div>
+            </a>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--texto-claro); margin-top: 25px; font-style: italic;">
+            Você também pode encontrar itens similares em outras lojas de sua preferência.
+        </p>
+    </section>
+
+    <!-- ===== FECHAMENTO ===== -->
+    <section class="closing-section fade-up">
+        <div class="closing-content">
+            <p class="closing-text">
+                Agradecemos por fazer parte deste momento tão especial. Com carinho,
+            </p>
+            <div class="closing-names">Renan & Karol</div>
+            <div class="closing-heart">💕</div>
+        </div>
+    </section>
+
+</div>
+
+<!-- ===== MODAL DE RESERVA ===== -->
+<!-- ===== MODAL DE IMAGEM AMPLIADA ===== -->
+<div class="image-modal-overlay" id="image-modal" onclick="closeImageModalOutside(event)">
+    <div class="image-modal">
+        <button class="modal-close" onclick="closeImageModal()">×</button>
+        <img class="image-modal-img" id="image-modal-img" src="" alt="">
+        <div class="image-modal-info">
+            <div class="image-modal-name" id="image-modal-name"></div>
+            <div class="image-modal-stars" id="image-modal-stars"></div>
+            <div class="image-modal-points" id="image-modal-points"></div>
+            <button class="image-modal-btn" id="image-modal-btn">Adicionar ao Carrinho</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL DE CHECKOUT / RESERVA ===== -->
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal()">×</button>
+        <h3 class="modal-title">Finalizar Reserva</h3>
+        <p style="text-align: center; font-size: 0.85rem; color: var(--texto-claro); margin-bottom: 20px; font-family: 'Cormorant Garamond', serif; font-style: italic;">Preencha seus dados para confirmar sua reserva</p>
+
+        <div class="cart-preview" id="cart-preview">
+            <div class="cart-preview-title">Itens no Carrinho</div>
+            <div id="cart-items"></div>
+            <div class="cart-total">
+                <span>Total de Pontos:</span>
+                <span id="cart-total-points">0</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Nome Completo *</label>
+            <input type="text" class="form-input" id="guest-name" placeholder="Digite seu nome completo">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">WhatsApp *</label>
+            <input type="tel" class="form-input" id="guest-whatsapp" placeholder="(00) 00000-0000">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">E-mail *</label>
+            <input type="email" class="form-input" id="guest-email" placeholder="seu@email.com">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Mensagem para os noivos (opcional)</label>
+            <textarea class="form-input form-textarea" id="guest-message" placeholder="Deixe uma mensagem carinhosa..."></textarea>
+        </div>
+
+        <button class="btn-confirm" onclick="confirmReservation()">Confirmar Reserva</button>
+    </div>
+</div>
+
+<!-- ===== CARRINHO FLUTUANTE ===== -->
+<div class="cart-float" id="cart-float" style="display: none;">
+    <button class="cart-btn" onclick="openCart()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+        <span class="cart-count" id="cart-count">0</span>
+    </button>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast"></div>
+
+<!-- ===== DADOS DOS PRODUTOS ===== -->
+<script>
+const categories = [
+  {
+    "id": "cozinha",
+    "title": "Cozinha",
+    "icon": "🍳",
+    "products": [
+      {
+        "name": "Jogo de Panelas Antiaderente Tramontina",
+        "image": "assets/Jogo de Panela antiaderente tramontina.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 1
+      },
+      {
+        "name": "Jogo de Panelas de Cerâmica",
+        "image": "assets/Jogo de Panelas de ceramica.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 2
+      },
+      {
+        "name": "Jogo de Panelas para Indução",
+        "image": "assets/Jogo de Panela por Inducao.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 3
+      },
+      {
+        "name": "Panela de Pressão Elétrica",
+        "image": "assets/Panela de pressao eletrica.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 4
+      },
+      {
+        "name": "Forno Elétrico",
+        "image": "assets/forno eletrico.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 5
+      },
+      {
+        "name": "Micro-ondas",
+        "image": "assets/Microondas.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 6
+      },
+      {
+        "name": "Liquidificador",
+        "image": "assets/Liquidificador.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 7
+      },
+      {
+        "name": "Batedeira Elétrica",
+        "image": "assets/batedeira eletrica.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 8
+      },
+      {
+        "name": "Mixer",
+        "image": "assets/Mixer.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 9
+      },
+      {
+        "name": "Torradeira Elétrica",
+        "image": "assets/torradeira eletrica.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 10
+      },
+      {
+        "name": "Sanduicheira",
+        "image": "assets/sanduicheira.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 11
+      },
+      {
+        "name": "Panela Elétrica",
+        "image": "assets/Panela eletrica.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 12
+      },
+      {
+        "name": "Chaleira Elétrica",
+        "image": "assets/Chaleira eletrica.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 13
+      },
+      {
+        "name": "Pipoqueira Elétrica",
+        "image": "assets/Pipoqueira.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 14
+      },
+      {
+        "name": "Máquina de Waffles",
+        "image": "assets/Maquina de waffles.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 15
+      },
+      {
+        "name": "Kit de Bowls",
+        "image": "assets/Kit de bowls.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 16
+      },
+      {
+        "name": "Tábuas de Carne",
+        "image": "assets/Tabuas de carne.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 17
+      },
+      {
+        "name": "Kit Sushi",
+        "image": "assets/Kit sushi.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 18
+      },
+      {
+        "name": "Forma de Pudim",
+        "image": "assets/Forma de pudim.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 19
+      },
+      {
+        "name": "Porta Temperos",
+        "image": "assets/Porta temperos.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 20
+      },
+      {
+        "name": "Kit Utensílios Silicone",
+        "image": "assets/Kit de utensilios de silicone.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 21
+      },
+      {
+        "name": "Jogo de Facas Tramontina",
+        "image": "assets/jogo de facas tramontina.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 22
+      },
+      {
+        "name": "Kit Potes Herméticos",
+        "image": "assets/kit de potes hermeticos.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 23
+      },
+      {
+        "name": "Escorredor de Louças Inox",
+        "image": "assets/Escorredor de louças inox.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 24
+      },
+      {
+        "name": "Kit Organizador Geladeira",
+        "image": "assets/Kit organizador de geladeira.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 25
+      },
+      {
+        "name": "Kit de Assadeiras",
+        "image": "assets/Kit de assadeiras.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 26
+      },
+      {
+        "name": "Kit de Assadeiras (modelo 2)",
+        "image": "assets/Kit de assadeiras 2.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 27
+      },
+      {
+        "name": "Boleira",
+        "image": "assets/Boleira.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 28
+      },
+      {
+        "name": "Panela Única Cerâmica",
+        "image": "assets/Panela unica ceramica.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 29
+      },
+      {
+        "name": "Panela Wok",
+        "image": "assets/panela wok.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 30
+      },
+      {
+        "name": "Air Fryer",
+        "image": "assets/2_Philips_Viva_Collection_Air_Fryer.png",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 31
+      },
+      {
+        "name": "Cafeteira Elétrica",
+        "image": "assets/3_Cafeteira_El_trica_Philips_Daily.png",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Item essencial para sua cozinha. Escolha na cor preta, branca, inox ou amadeirada.",
+        "id": 32
+      }
+    ]
+  },
+  {
+    "id": "mesa",
+    "title": "Mesa Posta",
+    "icon": "🍽️",
+    "products": [
+      {
+        "name": "Aparelho de Jantar",
+        "image": "assets/Aparelho de jantar .jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 33
+      },
+      {
+        "name": "Aparelho de Jantar (modelo 2)",
+        "image": "assets/Aparelho de jantar 2.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 34
+      },
+      {
+        "name": "Conjunto Talheres Inox Dourado",
+        "image": "assets/Jogo de talheres dourado.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 35
+      },
+      {
+        "name": "Jogo de Jarra e Copos",
+        "image": "assets/Jogo de jarra e copos.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 36
+      },
+      {
+        "name": "Jogo de Jarra e Copos (modelo 2)",
+        "image": "assets/Jogo de jarra e copos 2.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 37
+      },
+      {
+        "name": "Taças de Vinho",
+        "image": "assets/Kit de taças.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 38
+      },
+      {
+        "name": "Taças de Champagne",
+        "image": "assets/Kit de taças 2.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 39
+      },
+      {
+        "name": "Jogo Americano",
+        "image": "assets/jogo americano.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 40
+      },
+      {
+        "name": "Jogo de Canecas",
+        "image": "assets/Jogo de canecas.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 41
+      },
+      {
+        "name": "Jogo de Xícaras",
+        "image": "assets/jogo de xicaras.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 42
+      },
+      {
+        "name": "Kit Café da Manhã",
+        "image": "assets/Kit cafe da manha.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 43
+      },
+      {
+        "name": "Kit de Suqueira",
+        "image": "assets/Kit de suqueira.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 44
+      },
+      {
+        "name": "Petisqueira",
+        "image": "assets/Petisqueira.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 45
+      },
+      {
+        "name": "Porta Frios",
+        "image": "assets/Porta frios.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 46
+      },
+      {
+        "name": "Kit de Travessas",
+        "image": "assets/Kit de travessas de porcelana.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 47
+      },
+      {
+        "name": "Faqueiro Completo Inox",
+        "image": "assets/8_Faqueiro_New_Kolor_A_o_Inox_24_Pe.png",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 48
+      },
+      {
+        "name": "Bandeja Decorativa",
+        "image": "assets/1_Bandeja_Decorativa_De_Madeira_Dourada.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 49
+      },
+      {
+        "name": "Jogo de Sousplat",
+        "image": "assets/4_Jogo_6_Sousplat_De_Mesa_Redondo_Primer.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 50
+      },
+      {
+        "name": "Guardanapos de Tecido",
+        "image": "assets/10_Guardanapo_De_Tecido_Algod_o_Ponto.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 51
+      },
+      {
+        "name": "Anéis de Guardanapo",
+        "image": "assets/8_Anel_Guardanapo_Dourado_Metal_Kit.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 52
+      },
+      {
+        "name": "Porta-Guardanapos",
+        "image": "assets/1_Porta_Guardanapo_De_Mesa_A_o_Inox.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 53
+      },
+      {
+        "name": "Saleiro e Pimenteiro",
+        "image": "assets/1_Kit_Saleiro_E_Pimenteiro_De_Vidro.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 54
+      },
+      {
+        "name": "Galheteiro",
+        "image": "assets/6_Galheteiro_duplo_70mL_e_320mL_azeite.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 55
+      },
+      {
+        "name": "Queijeira",
+        "image": "assets/4_Queijeira_Quadrada_Madeira_Ac_cia.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 56
+      },
+      {
+        "name": "Fruteira",
+        "image": "assets/2_Fruteira_Aramada_Metal_Preta_25cm.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 57
+      },
+      {
+        "name": "Jarra Térmica",
+        "image": "assets/2_A_o_Inoxid_vel_T_rmica_Caf_Jarra.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 58
+      },
+      {
+        "name": "Porta-Pão",
+        "image": "assets/1_Porta_P_o_Cozinha_Padaria_Metal_Armazenamento.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 59
+      },
+      {
+        "name": "Taças de Sobremesa",
+        "image": "assets/10_Conjunto_de_Ta_as_para_Sobremesa.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Peça elegante para compor sua mesa posta. Ideal para receber com charme.",
+        "id": 60
+      }
+    ]
+  },
+  {
+    "id": "casa",
+    "title": "Casa & Decoração",
+    "icon": "🏡",
+    "products": [
+      {
+        "name": "Mesa de Centro",
+        "image": "assets/Mesa de centro.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 61
+      },
+      {
+        "name": "Mesa de Centro (modelo 2)",
+        "image": "assets/Mesa de centro 2.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 62
+      },
+      {
+        "name": "Cortina Grande 2m x 3m",
+        "image": "assets/Cortina grande.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 63
+      },
+      {
+        "name": "Cortina Blackout Quarto",
+        "image": "assets/Cortina Blackout para quarto.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 64
+      },
+      {
+        "name": "Jogo de Cama King",
+        "image": "assets/Jogo de cama king.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 65
+      },
+      {
+        "name": "Jogo de Cama King (modelo 2)",
+        "image": "assets/Jogo de cama king 2.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 66
+      },
+      {
+        "name": "Capas de Almofadas",
+        "image": "assets/Capas de almofadas.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 67
+      },
+      {
+        "name": "Kit de Travesseiros",
+        "image": "assets/Kit de travesseiros.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 68
+      },
+      {
+        "name": "Kit de Travesseiros (modelo 2)",
+        "image": "assets/Kit de travesseiros 2.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 69
+      },
+      {
+        "name": "Capas de Travesseiros",
+        "image": "assets/Capas de travesseiros.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 70
+      },
+      {
+        "name": "Toalha de Piso",
+        "image": "assets/Toalha de piso.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 71
+      },
+      {
+        "name": "Jogo de Toalhas",
+        "image": "assets/jogo de toalhas personalizada.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 72
+      },
+      {
+        "name": "Kit Tapetes Banheiro",
+        "image": "assets/Kit de tapetes de banheiro.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 73
+      },
+      {
+        "name": "Kit Lavabo",
+        "image": "assets/Kit lavabo.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 74
+      },
+      {
+        "name": "Lixeira de Banheiro",
+        "image": "assets/lixeira de banheiro.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 75
+      },
+      {
+        "name": "Espelho de Corpo Inteiro",
+        "image": "assets/Espelho corpo inteiro.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 76
+      },
+      {
+        "name": "Espelho de Corpo Inteiro (modelo 2)",
+        "image": "assets/Espelho corpo inteiro 2.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 77
+      },
+      {
+        "name": "Espelho Decorativo",
+        "image": "assets/espelho decorativo.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 78
+      },
+      {
+        "name": "Puff",
+        "image": "assets/puff.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 79
+      },
+      {
+        "name": "Manta para Sofá",
+        "image": "assets/manta para sofa.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 80
+      },
+      {
+        "name": "Luminária de Mesa",
+        "image": "assets/Luminaria de mesa.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 81
+      },
+      {
+        "name": "Luminária de Piso",
+        "image": "assets/Luminaria de piso.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 82
+      },
+      {
+        "name": "Alexa Echo Dot",
+        "image": "assets/Alexa echo .jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 83
+      },
+      {
+        "name": "Ventilador",
+        "image": "assets/ventilador.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 84
+      },
+      {
+        "name": "Difusor de Aroma",
+        "image": "assets/Difusor de aroma.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 85
+      },
+      {
+        "name": "Velas Aromáticas",
+        "image": "assets/Velas aromaticas.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 86
+      },
+      {
+        "name": "Planta Artificial",
+        "image": "assets/Planta artificial decorativa.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 87
+      },
+      {
+        "name": "Vasos Decorativos",
+        "image": "assets/Vasos decorativos.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 88
+      },
+      {
+        "name": "Kit Cinema em Casa",
+        "image": "assets/kit cinema em casa.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 89
+      },
+      {
+        "name": "Tapete Grande",
+        "image": "assets/3_Tapete_Grande_2x3m_para_Sala_Quarto.png",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 90
+      },
+      {
+        "name": "Edredom",
+        "image": "assets/4_Jogo_de_Edredom_King_no_fio_eg_pcio.png",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 91
+      },
+      {
+        "name": "Abajur",
+        "image": "assets/5_Abajur_De_Mesa_Preto_E_Dourado_Quarto.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Item de decoração para deixar seu lar ainda mais acolhedor.",
+        "id": 92
+      }
+    ]
+  },
+  {
+    "id": "organizacao",
+    "title": "Organização",
+    "icon": "🧹",
+    "products": [
+      {
+        "name": "Kit Ferramentas c/ Parafusadeira",
+        "image": "assets/Kit ferramentas com parafusadeira.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 93
+      },
+      {
+        "name": "Kit Churrasco Gourmet",
+        "image": "assets/Kit de churrasco.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 94
+      },
+      {
+        "name": "Kit Caixas Organizadoras",
+        "image": "assets/kit Caixa organizadora.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 95
+      },
+      {
+        "name": "Escada Doméstica Dobrável",
+        "image": "assets/Escada domestica dobravel.jpeg",
+        "stars": 3,
+        "points": 5,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 96
+      },
+      {
+        "name": "Caixa Térmica",
+        "image": "assets/Caixa termica.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 97
+      },
+      {
+        "name": "Mop Giratório",
+        "image": "assets/mop giratorio.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 98
+      },
+      {
+        "name": "Kit de Limpeza",
+        "image": "assets/Kit de limpeza.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 99
+      },
+      {
+        "name": "Passadeira Suspensa",
+        "image": "assets/Passadeira suspensa.jpeg",
+        "stars": 2,
+        "points": 3,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 100
+      },
+      {
+        "name": "Varal Retrátil",
+        "image": "assets/Varal.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 101
+      },
+      {
+        "name": "Kit Cesto Roupa Suja",
+        "image": "assets/kit de cesto de roupa suja.jpeg",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 102
+      },
+      {
+        "name": "Mop Spray",
+        "image": "assets/1_Mop_Spray_Com_Reservat_rio_400ml.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 103
+      },
+      {
+        "name": "Vassoura e Rodo",
+        "image": "assets/2_Vassoura_de_Pia_ava_Tipo_Prefeitura.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 104
+      },
+      {
+        "name": "Organizador de Armário",
+        "image": "assets/3_conjunto_de_6_divis_rias_de_prateleira.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 105
+      },
+      {
+        "name": "Kit de Cabides",
+        "image": "assets/2_Kit_30_Cabides_Veludo_Infantil_Bege.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 106
+      },
+      {
+        "name": "Cesto de Roupas Dobrável",
+        "image": "assets/2_Cesto_Roupa_Suja_Grande_Dobr_vel.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 107
+      },
+      {
+        "name": "Tábua de Passar",
+        "image": "assets/6_Tabua_Passar_Roupa_Passadeira_Extra.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 108
+      },
+      {
+        "name": "Lixeira de Cozinha",
+        "image": "assets/1_Lixeira_Cozinha_Inox_12_Litros_Para.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 109
+      },
+      {
+        "name": "Lixeira com Pedal",
+        "image": "assets/3_Lixeira_Banheiro_Cozinha_Com_Pedal.png",
+        "stars": 1,
+        "points": 1,
+        "maxReservations": 1,
+        "description": "Praticidade e organização para o dia a dia do seu lar.",
+        "id": 110
+      }
+    ]
+  }
+];
+
+// Salvar catálogo no localStorage para o admin conseguir ler nomes e pontos
+localStorage.setItem('categories', JSON.stringify(categories));
+</script>
+
+<!-- ===== PARTE 3: FIREBASE + FUNCIONALIDADES AVANÇADAS ===== -->
+<script>
+// ===== CONFIGURAÇÃO DO FIREBASE =====
+// INSTRUÇÕES PARA ATIVAR:
+// 1. Acesse https://console.firebase.google.com
+// 2. Crie um novo projeto (ex: "cha-panela-renan-karol")
+// 3. Vá em Configurações do Projeto > Geral
+// ===== CREDENCIAIS FIREBASE =====
+
+const firebaseConfig = {
+    apiKey: "AIzaSyB5VuZ_LvzF1bjVkkD2A819MpfJlx_h5BM",
+    authDomain: "cha-panela-renan-karol.firebaseapp.com",
+    projectId: "cha-panela-renan-karol",
+    storageBucket: "cha-panela-renan-karol.firebasestorage.app",
+    messagingSenderId: "949451867551",
+    appId: "1:949451867551:web:5977ef9db37f437d35e9aa"
+};
+
+// ===== ESTADO GLOBAL =====
+let cart = [];
+let currentProduct = null;
+let reservations = {}; // Cache local das reservas
+let isFirebaseActive = false; // Flag para saber se Firebase está conectado
+let db = null; // Referência ao Firestore
+
+// ===== INICIALIZAÇÃO DO FIREBASE =====
+function initFirebase() {
+    try {
+        if (typeof firebase !== 'undefined' && firebaseConfig.apiKey !== "SUA_API_KEY_AQUI") {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            isFirebaseActive = true;
+            console.log('✅ Firebase conectado com sucesso!');
+
+            // Ativar listener em tempo real
+            listenToReservations();
+        } else {
+            console.log('⚠️ Firebase não configurado. Usando modo local.');
+            loadLocalReservations();
+        }
+    } catch (error) {
+        console.error('❌ Erro ao conectar Firebase:', error);
+        console.log('Usando modo local (reservas não serão sincronizadas entre dispositivos)');
+        loadLocalReservations();
+    }
+}
+
+// ===== LISTENER EM TEMPO REAL =====
+function listenToReservations() {
+    if (!isFirebaseActive || !db) return;
+
+    db.collection('reservations').onSnapshot((snapshot) => {
+        const newReservations = {};
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const key = String(data.productId || doc.id);
+            newReservations[key] = {
+                count: data.count || 0,
+                reservers: data.reservers || []
+            };
+        });
+
+        reservations = newReservations;
+        updateAllProductCards();
+        console.log('🔄 Reservas atualizadas em tempo real');
+    }, (error) => {
+        console.error('Erro no listener:', error);
+    });
+}
+
+// ===== CARREGAR RESERVAS LOCAIS (fallback) =====
+function loadLocalReservations() {
+    try {
+        const saved = localStorage.getItem('cha_panela_reservations');
+        if (saved) {
+            reservations = JSON.parse(saved);
+            console.log('📦 Reservas locais carregadas');
+        }
+    } catch (e) {
+        console.log('Nenhuma reserva local encontrada');
+    }
+    updateAllProductCards();
+}
+
+// ===== SALVAR RESERVAS LOCAIS =====
+function saveLocalReservations() {
+    try {
+        localStorage.setItem('cha_panela_reservations', JSON.stringify(reservations));
+    } catch (e) {
+        console.error('Erro ao salvar localmente:', e);
+    }
+}
+
+// ===== FUNÇÕES DE UI =====
+function showToast(message, duration = 3000) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), duration);
+}
+
+function copyPix() {
+    const pixKey = '(94) 98410-9544';
+    navigator.clipboard.writeText(pixKey).then(() => {
+        showToast('✅ Chave PIX copiada!');
+    }).catch(() => {
+        const input = document.createElement('input');
+        input.value = pixKey;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        showToast('✅ Chave PIX copiada!');
+    });
+}
+
+// ===== CONTADOR DE PROGRESSO =====
+function updateProgressCounter() {
+    let totalProducts = 0;
+    let reservedProducts = 0;
+
+    categories.forEach(category => {
+        category.products.forEach(product => {
+            totalProducts++;
+            const currentReservations = getReservationCount(product.id);
+            if (currentReservations >= product.maxReservations) {
+                reservedProducts++;
+            }
+        });
+    });
+
+    const availableProducts = totalProducts - reservedProducts;
+    const percentage = totalProducts > 0 ? (reservedProducts / totalProducts) * 100 : 0;
+
+    document.getElementById('progress-total').textContent = totalProducts;
+    document.getElementById('progress-reserved').textContent = reservedProducts;
+    document.getElementById('progress-available').textContent = availableProducts;
+    document.getElementById('progress-bar-fill').style.width = percentage + '%';
+
+    const progressText = document.getElementById('progress-text');
+    if (reservedProducts === 0) {
+        progressText.textContent = 'Nenhum presente reservado ainda. Seja o primeiro! 🎁';
+    } else if (reservedProducts === totalProducts) {
+        progressText.textContent = 'Todos os presentes foram reservados! Vocês são incríveis! 🎉❤️';
+    } else {
+        const remaining = totalProducts - reservedProducts;
+        progressText.textContent = `${remaining} presente${remaining > 1 ? 's' : ''} ainda disponível${remaining > 1 ? 's' : ''}. Reserve o seu! ✨`;
+    }
+}
+
+// ===== FUNÇÕES DE RENDERIZAÇÃO =====
+function getStarsHTML(stars) {
+    return '⭐'.repeat(stars);
+}
+
+function getReservationCount(productId) {
+    productId = String(productId);
+    if (reservations[productId]) {
+        if (typeof reservations[productId] === 'object') {
+            return reservations[productId].count || 0;
+        }
+        return reservations[productId];
+    }
+    return 0;
+}
+
+function getReserversList(productId) {
+    productId = String(productId);
+    if (reservations[productId] && typeof reservations[productId] === 'object') {
+        return reservations[productId].reservers || [];
+    }
+    return [];
+}
+
+function getStatusHTML(product) {
+    const currentReservations = getReservationCount(product.id);
+    const remaining = product.maxReservations - currentReservations;
+
+    if (remaining <= 0) {
+        return '<span class="product-status status-soldout">Já reservado</span>';
+    } else if (currentReservations > 0) {
+        return `<span class="product-status status-reserved">${remaining} restante${remaining > 1 ? 's' : ''}</span>`;
+    } else {
+        return '<span class="product-status status-available">Disponível</span>';
+    }
+}
+
+function getButtonHTML(product) {
+    const currentReservations = getReservationCount(product.id);
+    const remaining = product.maxReservations - currentReservations;
+    const inCart = cart.find(item => item.id === product.id);
+
+    if (remaining <= 0) {
+        return '<button class="btn-reserve" disabled>✓ Já reservado</button>';
+    } else if (inCart) {
+        return `<button class="btn-reserve" style="background: var(--dourado);" onclick="removeFromCart(${product.id})">No carrinho ✓</button>`;
+    } else {
+        return `<button class="btn-reserve" onclick="addToCart(${product.id})">Reservar</button>`;
+    }
+}
+
+function getReserversHTML(product) {
+    const reservers = getReserversList(product.id);
+    if (reservers.length === 0) return '';
+
+    return `
+        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(114,47,55,0.15);">
+            <p style="font-size: 0.7rem; color: var(--texto-claro); margin-bottom: 5px; font-weight: 600;">
+                Reservado por:
+            </p>
+            ${reservers.map(r => `
+                <span style="display: inline-block; background: var(--vinho-suave); color: var(--vinho); 
+                    padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; margin: 2px;">
+                    ${r.name}
+                </span>
+            `).join('')}
+        </div>
+    `;
+}
+
+function renderProductCard(product, categoryIcon) {
+    const currentReservations = getReservationCount(product.id);
+    const remaining = product.maxReservations - currentReservations;
+
+    return `
+        <div class="product-card" data-id="${product.id}">
+            <div class="product-image" style="cursor: pointer;" onclick="openImageModal('${product.id}')">
+                <img src="${encodeURI(product.image)}" alt="${product.name}" onerror="this.parentElement.style.background='linear-gradient(135deg,#f0e6db 0%,#e8ddd0 100%)'">
+                <div class="product-image-placeholder">${categoryIcon}</div>
+                <div class="product-stars">${getStarsHTML(product.stars)}</div>
+            </div>
+            <div class="product-info">
+                <h3 class="product-name" style="cursor: pointer;" onclick="openImageModal('${product.id}')">${product.name}</h3>
+                <p class="product-description">${product.description}</p>
+                <div class="product-meta">
+                    <div class="product-points">
+                        <span>🏆 ${product.points} pts</span>
+                    </div>
+                    ${getStatusHTML(product)}
+                </div>
+                <div class="product-reservations">
+                    ${currentReservations} de ${product.maxReservations} reservado(s)
+                </div>
+                ${getReserversHTML(product)}
+                ${getButtonHTML(product)}
+            </div>
+        </div>
+    `;
+}
+
+function renderProducts() {
+    const container = document.getElementById('products-container');
+    container.innerHTML = '';
+
+    categories.forEach(category => {
+        const section = document.createElement('section');
+        section.className = 'category-section fade-up';
+        section.id = category.id;
+        section.dataset.category = category.id;
+
+        section.innerHTML = `
+            <div class="category-header">
+                <div class="category-icon">${category.icon}</div>
+                <h2 class="category-title">${category.title}</h2>
+            </div>
+            <div class="products-grid">
+                ${category.products.map(product => renderProductCard(product, category.icon)).join('')}
+            </div>
+        `;
+
+        container.appendChild(section);
+    });
+
+    // Re-observar elementos para animação
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+}
+
+function updateAllProductCards() {
+    // Atualizar apenas os cards sem re-renderizar tudo (mais eficiente)
+    categories.forEach(category => {
+        category.products.forEach(product => {
+            const card = document.querySelector(`.product-card[data-id="${product.id}"]`);
+            if (card) {
+                const meta = card.querySelector('.product-meta');
+                const reservationsDiv = card.querySelector('.product-reservations');
+                const buttonDiv = card.querySelector('.btn-reserve')?.parentElement;
+
+                if (meta) meta.innerHTML = `
+                    <div class="product-points">
+                        <span>🏆 ${product.points} pts</span>
+                    </div>
+                    ${getStatusHTML(product)}
+                `;
+
+                if (reservationsDiv) {
+                    const currentReservations = getReservationCount(product.id);
+                    reservationsDiv.textContent = `${currentReservations} de ${product.maxReservations} reservado(s)`;
+                }
+
+                // Atualizar botão
+                const oldButton = card.querySelector('.btn-reserve');
+                if (oldButton) {
+                    const newButtonHTML = getButtonHTML(product);
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = newButtonHTML;
+                    oldButton.replaceWith(tempDiv.firstElementChild);
+                }
+
+                // Atualizar lista de reservantes
+                const existingReservers = card.querySelector('.product-info > div:last-child');
+                if (existingReservers && existingReservers.style.borderTop) {
+                    existingReservers.remove();
+                }
+                const reserversHTML = getReserversHTML(product);
+                if (reserversHTML) {
+                    const infoDiv = card.querySelector('.product-info');
+                    infoDiv.insertAdjacentHTML('beforeend', reserversHTML);
+                }
+            }
+        });
+    });
+
+    // Atualizar contador de progresso
+    updateProgressCounter();
+}
+
+// ===== FUNÇÕES DO CARRINHO =====
+function addToCart(productId) {
+    productId = Number(productId);
+    const product = categories.flatMap(c => c.products).find(p => p.id === productId);
+    if (!product) return;
+
+    const currentReservations = getReservationCount(productId);
+    if (currentReservations >= product.maxReservations) {
+        showToast('❌ Este item já foi reservado!');
+        return;
+    }
+
+    if (cart.find(item => item.id === productId)) {
+        showToast('⚠️ Este item já está no seu carrinho!');
+        return;
+    }
+
+    cart.push(product);
+    updateCartUI();
+    updateAllProductCards(); // Atualizar botão para "No carrinho"
+    showToast(`✅ "${product.name}" adicionado!`);
+
+    // Animar carrinho
+    const cartBtn = document.querySelector('.cart-btn');
+    if (cartBtn) {
+        cartBtn.style.transform = 'scale(1.2)';
+        setTimeout(() => cartBtn.style.transform = 'scale(1)', 200);
+    }
+}
+
+function removeFromCart(productId) {
+    productId = Number(productId);
+    const item = cart.find(item => item.id === productId);
+    cart = cart.filter(item => item.id !== productId);
+    updateCartUI();
+    updateAllProductCards();
+    if (item) {
+        showToast(`🗑️ "${item.name}" removido do carrinho`);
+    }
+}
+
+function updateCartUI() {
+    const cartFloat = document.getElementById('cart-float');
+    const cartCount = document.getElementById('cart-count');
+
+    if (cart.length > 0) {
+        cartFloat.style.display = 'block';
+        cartCount.textContent = cart.length;
+    } else {
+        cartFloat.style.display = 'none';
+    }
+}
+
+function updateCartPreview() {
+    const cartItems = document.getElementById('cart-items');
+    const cartTotalPoints = document.getElementById('cart-total-points');
+
+    if (cart.length === 0) {
+        cartItems.innerHTML = '<p style="text-align:center; color: var(--texto-claro); font-size: 0.85rem; padding: 20px;">Carrinho vazio. Adicione itens para reservar!</p>';
+        cartTotalPoints.textContent = '0';
+        return;
+    }
+
+    cartItems.innerHTML = cart.map((item, index) => `
+        <div class="cart-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(114,47,55,0.1);">
+            <div>
+                <div style="font-weight: 600; font-size: 0.9rem;">${item.name}</div>
+                <div style="font-size: 0.75rem; color: var(--texto-claro);">${getStarsHTML(item.stars)} • ${item.points} pts</div>
+            </div>
+            <button onclick="removeFromCart(${item.id}); updateCartPreview();" 
+                style="background: none; border: none; color: var(--vinho); cursor: pointer; font-size: 1.2rem; padding: 5px;">
+                ✕
+            </button>
+        </div>
+    `).join('');
+
+    const total = cart.reduce((sum, item) => sum + item.points, 0);
+    cartTotalPoints.textContent = total;
+}
+
+// ===== FUNÇÕES DO MODAL DE IMAGEM =====
+function openImageModal(productId) {
+    productId = Number(productId);
+    const product = categories.flatMap(c => c.products).find(p => p.id === productId);
+    if (!product) return;
+
+    document.getElementById('image-modal-img').src = encodeURI(product.image);
+    document.getElementById('image-modal-img').alt = product.name;
+    document.getElementById('image-modal-name').textContent = product.name;
+    document.getElementById('image-modal-stars').innerHTML = getStarsHTML(product.stars);
+    document.getElementById('image-modal-points').textContent = '🏆 ' + product.points + ' pontos';
+
+    const btn = document.getElementById('image-modal-btn');
+    const inCart = cart.find(item => item.id == productId);
+    const currentReservations = getReservationCount(productId);
+    const isSoldOut = currentReservations >= product.maxReservations;
+
+    if (isSoldOut) {
+        btn.textContent = 'Já reservado';
+        btn.disabled = true;
+        btn.style.background = '#ccc';
+        btn.onclick = null;
+    } else if (inCart) {
+        btn.textContent = 'No Carrinho ✓';
+        btn.style.background = 'var(--dourado)';
+        btn.onclick = function() { closeImageModal(); openCart(); };
+    } else {
+        btn.textContent = 'Adicionar ao Carrinho';
+        btn.style.background = 'var(--vinho)';
+        btn.disabled = false;
+        btn.onclick = function() { addToCart(Number(productId)); btn.textContent = 'No Carrinho ✓'; btn.style.background = 'var(--dourado)'; };
+    }
+
+    document.getElementById('image-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageModal() {
+    document.getElementById('image-modal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function closeImageModalOutside(event) {
+    if (event.target.id === 'image-modal') {
+        closeImageModal();
+    }
+}
+
+// ===== FUNÇÕES DO MODAL DE CHECKOUT =====
+function openModal() {
+    updateCartPreview();
+    document.getElementById('modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+    document.body.style.overflow = '';
+    document.getElementById('guest-name').value = '';
+    document.getElementById('guest-whatsapp').value = '';
+    document.getElementById('guest-email').value = '';
+    document.getElementById('guest-message').value = '';
+}
+
+function openCart() {
+    if (cart.length === 0) {
+        showToast('🛒 Seu carrinho está vazio! Adicione itens primeiro.');
+        return;
+    }
+    openModal();
+}
+
+// ===== CONFIRMAÇÃO DE RESERVA =====
+async function confirmReservation() {
+    const name = document.getElementById('guest-name').value.trim();
+    const whatsapp = document.getElementById('guest-whatsapp').value.trim();
+    const email = document.getElementById('guest-email').value.trim();
+    const message = document.getElementById('guest-message').value.trim();
+
+    if (!name) {
+        showToast('⚠️ Por favor, digite seu nome completo!');
+        document.getElementById('guest-name').focus();
+        return;
+    }
+
+    if (!whatsapp) {
+        showToast('⚠️ Por favor, digite seu WhatsApp!');
+        document.getElementById('guest-whatsapp').focus();
+        return;
+    }
+
+    if (!email || !email.includes('@')) {
+        showToast('⚠️ Por favor, digite um e-mail válido!');
+        document.getElementById('guest-email').focus();
+        return;
+    }
+
+    if (cart.length === 0) {
+        showToast('⚠️ Seu carrinho está vazio!');
+        return;
+    }
+
+    // Verificar novamente se todos os itens ainda estão disponíveis
+    for (const product of cart) {
+        const currentReservations = getReservationCount(product.id);
+        if (currentReservations >= product.maxReservations) {
+            showToast(`❌ "${product.name}" foi reservado por outra pessoa. Removendo do carrinho...`);
+            removeFromCart(product.id);
+            updateCartPreview();
+            return;
+        }
+    }
+
+    const totalPoints = cart.reduce((sum, item) => sum + item.points, 0);
+
+    // Mostrar loading
+    const btn = document.querySelector('.btn-confirm');
+    const originalText = btn.textContent;
+    btn.textContent = 'Processando...';
+    btn.disabled = true;
+
+    try {
+        if (isFirebaseActive && db) {
+            // Salvar no Firebase
+            const batch = db.batch();
+
+            for (const product of cart) {
+                const docId = String(product.id);
+                const reservationRef = db.collection('reservations').doc(docId);
+                const doc = await reservationRef.get();
+
+                if (doc.exists) {
+                    const data = doc.data();
+                    const newCount = (data.count || 0) + 1;
+                    const newReservers = [...(data.reservers || []), { name, whatsapp, email, message, date: new Date().toISOString() }];
+
+                    if (newCount > product.maxReservations) {
+                        throw new Error(`Limite excedido para ${product.name}`);
+                    }
+
+                    batch.update(reservationRef, {
+                        count: newCount,
+                        reservers: newReservers,
+                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } else {
+                    batch.set(reservationRef, {
+                        productId: docId,
+                        count: 1,
+                        reservers: [{ name, whatsapp, email, message, date: new Date().toISOString() }],
+                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+            }
+
+            await batch.commit();
+            console.log('✅ Reservas salvas no Firebase!');
+        } else {
+            // Modo local
+            cart.forEach(product => {
+                const current = reservations[product.id] || { count: 0, reservers: [] };
+                current.count++;
+                current.reservers.push({ name, whatsapp, email, message, date: new Date().toISOString() });
+                reservations[product.id] = current;
+            });
+            saveLocalReservations();
+        }
+
+        // Mostrar mensagem de sucesso
+        showToast(`🎉 Reserva confirmada! Você acumulou ${totalPoints} pontos!`, 5000);
+
+        // Efeito de confete (simples)
+        createConfetti();
+
+        // Limpar carrinho
+        cart = [];
+        updateCartUI();
+        closeModal();
+
+        // Atualizar visualização
+        updateAllProductCards();
+
+    } catch (error) {
+        console.error('Erro ao confirmar:', error);
+        showToast('❌ Erro ao confirmar reserva. Tente novamente.');
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
+
+// ===== EFEITO CONFETE =====
+function createConfetti() {
+    const colors = ['#722F37', '#B8956A', '#FDF8F3', '#9B4D55'];
+
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.style.cssText = `
+            position: fixed;
+            top: -10px;
+            left: ${Math.random() * 100}vw;
+            width: 10px;
+            height: 10px;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
+            z-index: 9999;
+            animation: confettiFall ${2 + Math.random() * 3}s linear forwards;
+        `;
+        document.body.appendChild(confetti);
+
+        setTimeout(() => confetti.remove(), 5000);
+    }
+}
+
+// Adicionar CSS do confete dinamicamente
+const confettiStyle = document.createElement('style');
+confettiStyle.textContent = `
+    @keyframes confettiFall {
+        to {
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(confettiStyle);
+
+// ===== ANIMAÇÕES DE SCROLL =====
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, observerOptions);
+
+// ===== FECHAR MODAL AO CLICAR FORA =====
+document.getElementById('modal').addEventListener('click', (e) => {
+    if (e.target.id === 'modal') {
+        closeModal();
+    }
+});
+
+// ===== FECHAR MODAL COM ESC =====
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeModal();
+    }
+});
+
+// ===== FILTROS DE CATEGORIA =====
+document.getElementById('category-filters').addEventListener('click', (e) => {
+    const btn = e.target.closest('.category-filter-btn');
+    if (!btn) return;
+
+    // Atualizar botão ativo
+    document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const filter = btn.dataset.filter;
+    const sections = document.querySelectorAll('.category-section');
+
+    sections.forEach(section => {
+        if (filter === 'all' || section.dataset.category === filter) {
+            section.style.display = 'block';
+        } else {
+            section.style.display = 'none';
+        }
+    });
+});
+
+// ===== INICIALIZAÇÃO =====
+document.addEventListener('DOMContentLoaded', () => {
+    renderProducts();
+    initFirebase();
+
+    // Observar elementos para animação
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    console.log('%c🎁 Lista de Presentes - Renan & Karol', 'color: #722F37; font-size: 20px; font-weight: bold;');
+    console.log('%c📅 14 de Junho de 2026', 'color: #B8956A; font-size: 14px;');
+    console.log('%c💝 Desenvolvido com amor para o Chá de Panela', 'color: #9B4D55; font-size: 12px;');
+});
+</script>
+
+</body>
+</html>

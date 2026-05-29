@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Reservas | Renan & Karol</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root {
+            --vinho: #722F37;
+            --vinho-claro: #9B4D55;
+            --dourado: #B8956A;
+            --dourado-claro: #D4B896;
+            --creme: #FDF8F3;
+            --creme-escuro: #F0E6DB;
+            --texto: #2C1810;
+            --texto-claro: #8B7355;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--creme);
+            color: var(--texto);
+            min-height: 100vh;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, var(--vinho) 0%, var(--vinho-claro) 100%);
+            color: #fff;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .admin-header h1 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .admin-header p {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* ===== ESTATÍSTICAS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--vinho);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--texto-claro);
+            margin-top: 5px;
+        }
+
+        /* ===== FILTROS ===== */
+        .filters-bar {
+            background: #fff;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filters-bar input, .filters-bar select {
+            padding: 10px 15px;
+            border: 1px solid var(--creme-escuro);
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .filters-bar button {
+            padding: 10px 20px;
+            background: var(--vinho);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* ===== TABELA ===== */
+        .reservations-table {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        .reservations-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .reservations-table th {
+            background: var(--vinho);
+            color: #fff;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .reservations-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--creme-escuro);
+            font-size: 0.85rem;
+        }
+
+        .reservations-table tr:hover {
+            background: var(--creme);
+        }
+
+        .guest-name {
+            font-weight: 600;
+            color: var(--vinho);
+        }
+
+        .guest-contact {
+            font-size: 0.75rem;
+            color: var(--texto-claro);
+            margin-top: 3px;
+        }
+
+        .items-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .item-tag {
+            background: var(--creme);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            color: var(--texto);
+        }
+
+        .item-tag .points {
+            color: var(--vinho);
+            font-weight: 600;
+        }
+
+        .date-info {
+            font-size: 0.75rem;
+            color: var(--texto-claro);
+        }
+
+        .message-cell {
+            max-width: 200px;
+            font-style: italic;
+            color: var(--texto-claro);
+        }
+
+        /* ===== LOADING / EMPTY ===== */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: var(--texto-claro);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--texto-claro);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .reservations-table { overflow-x: auto; }
+            .reservations-table table { min-width: 800px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-header">
+        <h1>Painel de Controle - Reservas</h1>
+        <p>Chá de Panela Renan & Karol | 14 de Junho de 2026</p>
+    </div>
+
+    <div class="admin-container">
+
+        <!-- Estatísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="stat-total-reservas">0</div>
+                <div class="stat-label">Reservas de Presentes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-total-itens">0</div>
+                <div class="stat-label">Itens Reservados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-total-pontos">0</div>
+                <div class="stat-label">Total de Pontos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-total-presencas">0</div>
+                <div class="stat-label">Presenças Confirmadas</div>
+            </div>
+        </div>
+
+        <!-- Abas -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);">
+            <button onclick="showTab('reservas')" id="tab-reservas" style="flex:1; padding: 12px; border: none; border-radius: 8px; background: var(--vinho); color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 600; cursor: pointer;">Reservas de Presentes</button>
+            <button onclick="showTab('presencas')" id="tab-presencas" style="flex:1; padding: 12px; border: none; border-radius: 8px; background: transparent; color: var(--texto); font-family: 'Montserrat', sans-serif; font-weight: 500; cursor: pointer;">Confirmacoes de Presenca</button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-bar">
+            <input type="text" id="search-input" placeholder="Buscar por nome, item..." oninput="filterTable()">
+            <select id="filter-status" onchange="filterTable()">
+                <option value="all">Todas as reservas</option>
+                <option value="today">Hoje</option>
+                <option value="week">Última semana</option>
+            </select>
+            <button onclick="exportCSV()">📥 Exportar CSV</button>
+        </div>
+
+        <!-- Tabela -->
+        <div class="reservations-table" id="reservations-container">
+            <div class="loading">Carregando reservas...</div>
+        </div>
+
+    </div>
+
+    <script>
+        // ===== FIREBASE =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5VuZ_LvzF1bjVkkD2A819MpfJlx_h5BM",
+            authDomain: "cha-panela-renan-karol.firebaseapp.com",
+            projectId: "cha-panela-renan-karol",
+            storageBucket: "cha-panela-renan-karol.firebasestorage.app",
+            messagingSenderId: "949451867551",
+            appId: "1:949451867551:web:5977ef9db37f437d35e9aa"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let allReservations = [];
+        let allPresencas = [];
+        let currentTab = 'reservas';
+
+        // Dados dos produtos (para mostrar nomes)
+        const productNames = {};
+
+        async function loadData() {
+            // Carregar nomes dos produtos do localStorage (da pagina de lista de presentes)
+            try {
+                const cats = JSON.parse(localStorage.getItem('categories') || '[]');
+                cats.forEach(cat => {
+                    cat.products.forEach(p => {
+                        productNames[p.id] = p;
+                    });
+                });
+            } catch(e) { /* localStorage vazio ou inacessivel */ }
+
+            try {
+                // Carregar reservas de presentes (estrutura: cada doc = um produto com reservers)
+                const snapshot = await db.collection('reservations').get();
+
+                // Agrupar por pessoa (nome + whatsapp como chave)
+                const reservationsByPerson = {};
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const productId = String(data.productId || doc.id);
+                    const productName = productNames[productId]?.name || `Produto #${productId}`;
+                    const productPoints = productNames[productId]?.points || 0;
+
+                    (data.reservers || []).forEach(reserver => {
+                        const key = `${reserver.name || ''}|${reserver.whatsapp || ''}`;
+                        if (!reservationsByPerson[key]) {
+                            reservationsByPerson[key] = {
+                                nome: reserver.name || '-',
+                                whatsapp: reserver.whatsapp || '-',
+                                email: reserver.email || '-',
+                                mensagem: reserver.message || reserver.mensagem || '',
+                                data: reserver.date ? new Date(reserver.date) : new Date(),
+                                itens: []
+                            };
+                        }
+                        reservationsByPerson[key].itens.push({
+                            nome: productName,
+                            pontos: productPoints
+                        });
+                        // Usar a data mais recente
+                        const rd = reserver.date ? new Date(reserver.date) : new Date();
+                        if (rd > reservationsByPerson[key].data) {
+                            reservationsByPerson[key].data = rd;
+                        }
+                    });
+                });
+
+                // Converter para array e ordenar por data
+                allReservations = Object.values(reservationsByPerson).sort((a, b) => b.data - a.data);
+
+                // Carregar confirmacoes de presenca
+                const snapshotPresencas = await db.collection('presencas').orderBy('data', 'desc').get();
+                allPresencas = [];
+                snapshotPresencas.forEach(doc => {
+                    const data = doc.data();
+                    allPresencas.push({
+                        id: doc.id,
+                        ...data,
+                        data: data.data ? new Date(data.data.seconds * 1000) : new Date()
+                    });
+                });
+
+                renderTable(allReservations);
+                updateStats(allReservations);
+            } catch (e) {
+                console.error('Erro ao carregar:', e);
+                document.getElementById('reservations-container').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <p>Erro ao carregar dados. Verifique a conexao com o Firebase.</p>
+                        <p style="font-size: 0.75rem; margin-top: 10px;">${e.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderTable(reservations) {
+            const container = document.getElementById('reservations-container');
+
+            if (reservations.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎁</div>
+                        <p>Nenhuma reserva encontrada ainda.</p>
+                        <p style="font-size: 0.8rem; margin-top: 5px;">As reservas aparecerão aqui quando os convidados começarem a reservar.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Convidado</th>
+                            <th>Contato</th>
+                            <th>Itens Reservados</th>
+                            <th>Mensagem</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            reservations.forEach(r => {
+                const itensHtml = (r.itens || []).map(item => {
+                    const name = item.nome || `Item #${item.id}`;
+                    return `<span class="item-tag">${name} <span class="points">(${item.pontos}pts)</span></span>`;
+                }).join('');
+
+                const dataStr = r.data.toLocaleDateString('pt-BR') + ' ' + r.data.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+
+                html += `
+                    <tr>
+                        <td>
+                            <div class="guest-name">${r.nome || '-'}</div>
+                        </td>
+                        <td>
+                            <div class="guest-contact">📱 ${r.whatsapp || '-'}</div>
+                            <div class="guest-contact">✉️ ${r.email || '-'}</div>
+                        </td>
+                        <td>
+                            <div class="items-list">${itensHtml || '-'}</div>
+                        </td>
+                        <td class="message-cell">${r.mensagem || '-'}</td>
+                        <td class="date-info">${dataStr}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function updateStats(reservations) {
+            let totalItens = 0;
+            let totalPontos = 0;
+
+            reservations.forEach(r => {
+                (r.itens || []).forEach(item => {
+                    totalItens++;
+                    totalPontos += item.pontos || 0;
+                });
+            });
+
+            document.getElementById('stat-total-reservas').textContent = reservations.length;
+            document.getElementById('stat-total-itens').textContent = totalItens;
+            document.getElementById('stat-total-pontos').textContent = totalPontos;
+            document.getElementById('stat-total-presencas').textContent = allPresencas.filter(p => p.vaiComparecer).length;
+        }
+
+        // ===== ABAS =====
+        function showTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-reservas').style.background = tab === 'reservas' ? 'var(--vinho)' : 'transparent';
+            document.getElementById('tab-reservas').style.color = tab === 'reservas' ? '#fff' : 'var(--texto)';
+            document.getElementById('tab-presencas').style.background = tab === 'presencas' ? 'var(--vinho)' : 'transparent';
+            document.getElementById('tab-presencas').style.color = tab === 'presencas' ? '#fff' : 'var(--texto)';
+
+            if (tab === 'reservas') {
+                renderTable(allReservations);
+            } else {
+                renderPresencas(allPresencas);
+            }
+        }
+
+        function renderPresencas(presencas) {
+            const container = document.getElementById('reservations-container');
+
+            if (presencas.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎉</div>
+                        <p>Nenhuma confirmacao de presenca encontrada ainda.</p>
+                        <p style="font-size: 0.8rem; margin-top: 5px;">As confirmacoes aparecerao aqui quando os convidados responderem o RSVP.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>WhatsApp</th>
+                            <th>Comparecera?</th>
+                            <th>Acompanhantes</th>
+                            <th>Mensagem</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            presencas.forEach(p => {
+                const comparecera = p.vaiComparecer
+                    ? '<span style="color: #4CAF50; font-weight: 600;">✅ Sim</span>'
+                    : '<span style="color: #999;">❌ Nao</span>';
+
+                const dataStr = p.data.toLocaleDateString('pt-BR') + ' ' + p.data.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+
+                html += `
+                    <tr>
+                        <td><div class="guest-name">${p.nome || '-'}</div></td>
+                        <td><div class="guest-contact">📱 ${p.whatsapp || '-'}</div></td>
+                        <td>${comparecera}</td>
+                        <td style="text-align: center; font-weight: 600;">${p.acompanhantes || 0}</td>
+                        <td class="message-cell">${p.mensagem || '-'}</td>
+                        <td class="date-info">${dataStr}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function filterTable() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const status = document.getElementById('filter-status').value;
+
+            let filtered = allReservations.filter(r => {
+                const matchSearch = !search ||
+                    (r.nome || '').toLowerCase().includes(search) ||
+                    (r.itens || []).some(i => (i.nome || '').toLowerCase().includes(search));
+
+                let matchStatus = true;
+                const now = new Date();
+                if (status === 'today') {
+                    matchStatus = r.data.toDateString() === now.toDateString();
+                } else if (status === 'week') {
+                    const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+                    matchStatus = r.data >= weekAgo;
+                }
+
+                return matchSearch && matchStatus;
+            });
+
+            renderTable(filtered);
+        }
+
+        function exportCSV() {
+            let csv, filename;
+
+            if (currentTab === 'reservas') {
+                csv = 'Data,Nome,WhatsApp,Email,Itens,Total Pontos,Mensagem\n';
+                allReservations.forEach(r => {
+                    const itens = (r.itens || []).map(i => i.nome).join('; ');
+                    const pontos = (r.itens || []).reduce((s, i) => s + (i.pontos || 0), 0);
+                    const data = r.data.toLocaleDateString('pt-BR');
+                    csv += `"${data}","${r.nome || ''}","${r.whatsapp || ''}","${r.email || ''}","${itens}",${pontos},"${(r.mensagem || '').replace(/"/g, '""')}"\n`;
+                });
+                filename = 'reservas-presentes-renan-karol.csv';
+            } else {
+                csv = 'Data,Nome,WhatsApp,Comparecera,Acompanhantes,Mensagem\n';
+                allPresencas.forEach(p => {
+                    const data = p.data.toLocaleDateString('pt-BR');
+                    csv += `"${data}","${p.nome || ''}","${p.whatsapp || ''}","${p.vaiComparecer ? 'Sim' : 'Nao'}","${p.acompanhantes || 0}","${(p.mensagem || '').replace(/"/g, '""')}"\n`;
+                });
+                filename = 'confirmacoes-presenca-renan-karol.csv';
+            }
+
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+        }
+
+        // Carregar dados ao iniciar
+        loadData();
+    </script>
+
+</body>
+</html>
