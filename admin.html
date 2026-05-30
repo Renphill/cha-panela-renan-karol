@@ -260,6 +260,7 @@
                 <option value="week">Última semana</option>
             </select>
             <button onclick="exportCSV()">📥 Exportar CSV</button>
+            <button onclick="resetData()" style="background: #fff; color: #c0392b; border: 1.5px solid #c0392b;">🗑️ Resetar Dados</button>
         </div>
 
         <!-- Tabela -->
@@ -559,6 +560,33 @@
             link.href = URL.createObjectURL(blob);
             link.download = filename;
             link.click();
+        }
+
+        // ===== RESETAR DADOS =====
+        async function resetData() {
+            const confirmCode = prompt('ATENCAO! Isso apagara TODAS as reservas e presencas.\n\nDigite RESETAR para confirmar:');
+            if (confirmCode !== 'RESETAR') {
+                alert('Reset cancelado. Nenhum dado foi apagado.');
+                return;
+            }
+
+            try {
+                const reservasSnapshot = await db.collection('reservations').get();
+                const batch = db.batch();
+                reservasSnapshot.forEach(doc => { batch.delete(doc.ref); });
+                await batch.commit();
+
+                const presencasSnapshot = await db.collection('presencas').get();
+                const batch2 = db.batch();
+                presencasSnapshot.forEach(doc => { batch2.delete(doc.ref); });
+                await batch2.commit();
+
+                alert('✅ Todos os dados foram apagados com sucesso!');
+                loadData();
+            } catch (e) {
+                console.error('Erro ao resetar:', e);
+                alert('❌ Erro ao apagar dados: ' + e.message);
+            }
         }
 
         // Carregar dados ao iniciar
